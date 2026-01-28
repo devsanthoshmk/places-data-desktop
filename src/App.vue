@@ -114,13 +114,20 @@
                 </li>
             </ul>
     </footer>
+
+    <!-- Maintenance Modal -->
+    <UnderMaintenance v-if="showMaintenance" @close="closeMaintenance" />
 </template>
 
 <script>
 import { search, make_excel } from './gmap_data.js';
 import Tooltip from 'bootstrap/js/dist/tooltip';
+import UnderMaintenance from './components/UnderMaintance.vue';
 
 export default {
+  components: {
+    UnderMaintenance
+  },
   data() {
     return {
         input:"",                //to get the search input from user
@@ -128,6 +135,7 @@ export default {
         btncolor: "btn-success", //color of the button to change accordingly
         shaking:"",              //shake search bar to indicate no input value
         spin : true,
+        showMaintenance: false,  //to show maintenance modal
 
         row_datas:[],            //for using gmap_data.js search return globally
     };
@@ -154,11 +162,8 @@ export default {
                 console.error('There was a problem with the search function:', error);
               };
           } else {
-            console.log(this.rows);
-            make_excel(this.rows,query);
-            this.btncolor='btn-success'
-            this.action="Search";
-            // this.input="";
+            // Show maintenance modal instead of downloading
+            this.showMaintenance = true;
           }
              
 
@@ -166,7 +171,12 @@ export default {
           } 
           
           
-        }
+        },
+      closeMaintenance() {
+        this.showMaintenance = false;
+        this.btncolor = 'btn-success';
+        this.action = 'Search';
+      }
       },
       mounted() {
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
