@@ -1,0 +1,14 @@
+# Tauri ignore file
+# Files and directories to ignore when building the Tauri app
+
+node_modules
+.git
+.github
+.vscode
+*.md
+test
+docs
+package-lock.json
+pnpm-lock.yaml
+.gitignore
+*.log
