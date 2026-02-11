@@ -26,3 +26,6 @@ dist-ssr
 pnpm-lock.yaml
 
 pnpm-workspace.yaml
+
+*.xlsx
+*.xlsx#

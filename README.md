@@ -28,6 +28,69 @@ Globex Places Data is a web application that allows users to search for business
 - **⚡ Fast Performance**: Parallel data fetching for optimal speed
 - **🎨 Modern UI**: Clean, Bootstrap-based interface with smooth animations
 - **♿ Accessible**: ARIA labels and semantic HTML for better accessibility
+- **🔍 Robust Scraping**: Improved DOM-based data extraction with phone number validation
+
+## 🔧 Scraping Technology
+
+### Search URL Format
+
+The application uses Google Search with the following URL structure:
+
+```javascript
+const url = new URL("https://www.google.com/search");
+url.search = new URLSearchParams({
+    q: query,          // Search query (e.g., "restaurants in Chennai")
+    start: pagination, // Pagination offset (0, 10, 20, etc.)
+    udm: "1",          // Universal Data Mode for structured results
+})
+```
+
+### Advanced DOM Parsing
+
+The scraping logic has been significantly improved to use robust DOM parsing instead of unsafe `eval()` operations:
+
+**Key Improvements**:
+
+1. **Structured Element Extraction**: Targets specific CSS classes and ARIA roles for reliable data extraction
+   - Title: `[role="heading"]`
+   - Details container: `.rllt__details`
+   - Rating elements: `.yi40Hd`, `[role="img"]`
+   - Review counts: `[aria-label*="reviews"]`
+
+2. **Phone Number Validation**: Uses `libphonenumber-js` library for international phone number validation
+   ```javascript
+   import { parsePhoneNumberFromString } from 'libphonenumber-js';
+   
+   // Validates and formats phone numbers to E.164 standard
+   // Example: +817012740809
+   ```
+
+3. **Intelligent Address Parsing**: Segments text by middle dots (·) to separate address from phone numbers
+
+4. **Fallback Mechanisms**: Multiple extraction strategies for each data field to handle varying HTML structures
+
+**Data Extraction Process**:
+```javascript
+// 1. Parse HTML using DOMParser (browser-native)
+const parser = new DOMParser();
+const doc = parser.parseFromString(html, 'text/html');
+
+// 2. Find all place cards
+const items = doc.querySelector("#search").querySelectorAll('.VkpGBb');
+
+// 3. Extract structured data from each card
+// - Title (heading role)
+// - Stars/Reviews (aria labels)
+// - Category (text parsing)
+// - Address (segment parsing)
+// - Phone (validated with libphonenumber-js)
+// - Website URL (anchor tags)
+```
+
+### Dependencies for Scraping
+
+- **libphonenumber-js**: Phone number validation and formatting
+- **DOMParser**: Native browser API for HTML parsing (no external library needed)
 
 ## 📁 Project Structure
 
@@ -269,7 +332,7 @@ pnpm preview
 
 3. Wait for results to load (spinner animation indicates progress)
 
-4. Click **Download** to export results to Excel (currently under maintenance)
+4. Click **Download** to export results to Excel
 
 ### Query Format Guidelines
 
@@ -466,6 +529,7 @@ npm test src/components/SearchBar.spec.js
 
 ### Libraries
 - **write-excel-file** (v2.0.10) - Excel export functionality
+- **libphonenumber-js** - Phone number validation and formatting
 - **vuedraggable** (v4.1.0) - Drag & drop (if needed)
 
 ### Development Tools

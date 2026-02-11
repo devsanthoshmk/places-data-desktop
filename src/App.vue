@@ -7,14 +7,14 @@
   - Google Maps Places data search functionality
   - Excel export capability for search results
   - Responsive design with Bootstrap integration
-  - Under maintenance modal for features in development
+
   
   Component Structure:
   - NavigationBar: Application header with branding
   - SearchBar: Main search input interface
   - ActionButtons: Search and download controls
   - FooterSocial: Social media links
-  - UnderMaintenance: Modal for maintenance notifications
+
   
   Dependencies:
   - gmap_data.js: Search and Excel export functionality
@@ -60,11 +60,7 @@
   <!-- Footer with Social Links -->
   <FooterSocial />
 
-  <!-- Maintenance Modal -->
-  <UnderMaintenance 
-    v-if="showMaintenance" 
-    @close="closeMaintenance" 
-  />
+
 </template>
 
 <script>
@@ -81,7 +77,7 @@
  * @requires SearchBar - Search input component
  * @requires ActionButtons - Action controls component
  * @requires FooterSocial - Footer with social links
- * @requires UnderMaintenance - Maintenance modal component
+
  */
 import { search, make_excel } from './gmap_data.js';
 import Tooltip from 'bootstrap/js/dist/tooltip';
@@ -89,7 +85,7 @@ import NavigationBar from './components/NavigationBar.vue';
 import SearchBar from './components/SearchBar.vue';
 import ActionButtons from './components/ActionButtons.vue';
 import FooterSocial from './components/FooterSocial.vue';
-import UnderMaintenance from './components/UnderMaintance.vue';
+
 
 export default {
   name: 'App',
@@ -99,7 +95,7 @@ export default {
     SearchBar,
     ActionButtons,
     FooterSocial,
-    UnderMaintenance,
+
   },
   
   data() {
@@ -136,11 +132,7 @@ export default {
        */
       spin: true,
       
-      /**
-       * Controls visibility of maintenance modal
-       * @type {Boolean}
-       */
-      showMaintenance: false,
+
       
       /**
        * Stores search results from Google Maps API
@@ -165,7 +157,7 @@ export default {
      * Workflow:
      * 1. Validates input query
      * 2. If action is 'Search': Performs Google Maps search
-     * 3. If action is 'Download': Shows maintenance modal (Excel export disabled)
+     * 3. If action is 'Download': Exports data to Excel file
      * 
      * @param {String} query - The search query from user input
      * @returns {Promise<void>}
@@ -197,14 +189,11 @@ export default {
             this.action = 'Search';
           }
         } else {
-          // Show maintenance modal instead of downloading
-          this.showMaintenance = true;
-          
-          // Production working code (currently disabled):
-          // console.log(this.rows);
-          // make_excel(this.rows, query);
-          // this.btncolor = 'btn-success';
-          // this.action = 'Search';
+          // Download Excel file
+          console.log(this.rows);
+          make_excel(this.rows, query);
+          this.btncolor = 'btn-success';
+          this.action = 'Search';
         }
       } else {
         // Trigger shake animation for empty input
@@ -215,14 +204,7 @@ export default {
       }
     },
     
-    /**
-     * Closes maintenance modal and resets state
-     */
-    closeMaintenance() {
-      this.showMaintenance = false;
-      this.btncolor = 'btn-success';
-      this.action = 'Search';
-    },
+
   },
   
   /**
