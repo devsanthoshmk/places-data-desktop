@@ -27,24 +27,21 @@ const headers = {
 };
 
 // ---- fetch ----
-const result = await fetch(`https://proxy.connectwithsanthoshmk.workers.dev/fetch?url=${url.toString()}`, {
+const res = await fetch(url, {
   headers,
   redirect: "follow",
   signal: AbortSignal.timeout(20_000),
 });
 
-if (!result.ok) {
-  throw new Error(`HTTP ${result.status}`);
+if (!res.ok) {
+  throw new Error(`HTTP ${res.status}`);
 }
 
-let res = await result.json();
-res = res.data; // The proxy server returns { data: "decoded HTML string" }
-
 // ---- read already-decoded body ----
-const buffer = Buffer.from(res, "utf8"); // Convert string to buffer for TextDecoder
+const buffer = Buffer.from(await res.arrayBuffer());
 
 // ---- charset detection ----
-const contentType = result.headers.get("content-type") || "";
+const contentType = res.headers.get("content-type") || "";
 const match = contentType.match(/charset=([^\s;]+)/i);
 const charset = match ? match[1] : "utf-8";
 

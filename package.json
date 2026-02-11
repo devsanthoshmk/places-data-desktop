@@ -6,9 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-dialog": "~2.6.0",
+    "@tauri-apps/plugin-fs": "~2.4.5",
+    "@tauri-apps/plugin-http": "^2.3.0",
+    "@tauri-apps/plugin-shell": "^2.3.5",
     "bootstrap": "^5.3.3",
     "libphonenumber-js": "^1.12.36",
     "vue": "^3.5.13",
@@ -16,6 +24,7 @@
     "write-excel-file": "^2.0.10"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "vite": "^6.0.5"
   }

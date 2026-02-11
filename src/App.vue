@@ -173,8 +173,8 @@ export default {
           
           try {
             // Perform search operation
-            this.rows = await search(query);
-            console.log('Final full_list:', this.rows.length);
+            this.row_datas = await search(query);
+            console.log('Final full_list:', this.row_datas.length);
             
             // Update to download state on success
             this.btncolor = 'btn-primary';
@@ -190,8 +190,9 @@ export default {
           }
         } else {
           // Download Excel file
-          console.log(this.rows);
-          make_excel(this.rows, query);
+          console.log(this.row_datas);
+          await make_excel(this.row_datas, query);
+          this.row_datas = []; // Clear data after download
           this.btncolor = 'btn-success';
           this.action = 'Search';
         }

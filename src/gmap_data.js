@@ -1,5 +1,8 @@
 import writeXlsxFile from 'write-excel-file'
 import { parsePhoneNumberFromString } from 'libphonenumber-js'
+import { fetch } from '@tauri-apps/plugin-http';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
 
 
 /**
@@ -22,7 +25,7 @@ function extractPhone(text) {
     return '';
 }
 
-function make_excel(data, query) {
+async function make_excel(data, query) {
     // console.log(data,query);
     const schema = [
         {
@@ -76,31 +79,70 @@ function make_excel(data, query) {
         }
     ];
 
+    // Clone data to remove Vue proxies which might confuse the library
+    const plainData = JSON.parse(JSON.stringify(data));
 
+    try {
+        // Get Blob from write-excel-file (without fileName, it returns blob)
+        const blob = await writeXlsxFile(plainData, {
+            schema
+        });
 
-    writeXlsxFile(data, {
-        schema,
-        fileName: `${query}.xlsx`,
-    });
-    console.log(`Successfully created ${query}.xlsx`);
+        // Use Tauri dialog to get save path
+        const filePath = await save({
+            defaultPath: `${query || 'places_data'}.xlsx`,
+            filters: [{
+                name: 'Excel Workbook',
+                extensions: ['xlsx']
+            }]
+        });
+
+        if (filePath) {
+            // Convert Blob to Uint8Array for writing
+            const arrayBuffer = await blob.arrayBuffer();
+            const uint8Array = new Uint8Array(arrayBuffer);
+
+            // Write file using Tauri fs plugin
+            await writeFile(filePath, uint8Array);
+            console.log(`Successfully saved to ${filePath}`);
+            alert(`File saved successfully to ${filePath}`);
+        } else {
+            console.log('Save cancelled by user');
+        }
+    } catch (error) {
+        console.error('Error saving Excel file:', error);
+        const errorMsg = error instanceof Error ? error.message : JSON.stringify(error);
+        alert(`Error saving file: ${errorMsg}`);
+    }
 
 }
 
 async function fetchit(url) {
 
-    await fetch(url, {
-        headers: {
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    const headers = {
+        "User-Agent":
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+    };
+
+    try {
+        const response = await fetch(url, {
+            headers,
+            redirect: "follow",
+            signal: AbortSignal.timeout(20_000),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
-    }).then((response) => {
-        return response.json()
-    }).then((html) => {
+
+        const htmlText = await response.text();
+
         const parser = new DOMParser();
 
-        // html.data is already a decoded string from the proxy server
-        // No need for charset detection or re-encoding/decoding
-        const htmlText = html.data;
+        // htmlText is the raw HTML string
         console.info(htmlText);
         const doc = parser.parseFromString(htmlText, 'text/html');
 
@@ -209,9 +251,9 @@ async function fetchit(url) {
             scrapedData.push(row);
         });
         return scrapedData;
-    }).catch((error) => {
+    } catch (error) {
         console.error("Error fetching data:", error);
-    })
+    }
 }
 
 
@@ -222,6 +264,7 @@ const signal = controller.signal;
 let query;
 
 async function search(q) {
+    full_list.length = 0; // Clear previous results
     query = q;
 
     // console.log(endpagination,"outer loop");
@@ -234,7 +277,7 @@ async function search(q) {
             udm: "1",
         }).toString();
         console.log(`Fetching: ${url}`);
-        const flaskUrl = `https://getcorsproxy.pythonanywhere.com/fetch?url=${url.toString()}`;
+        // const flaskUrl = `https://getcorsproxy.pythonanywhere.com/fetch?url=${url.toString()}`;
         // console.log(endpagination,"in loop");
         const result = await fetchit(url.toString());
         if (result?.length > 0) {
