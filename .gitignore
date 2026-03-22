@@ -70,9 +70,7 @@ dist-ssr
 *.sln
 *.sw?
 
-pnpm-lock.yaml
 
-pnpm-workspace.yaml
 
 *.xlsx
 *.xlsx#
